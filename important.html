@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        *{
+            margin: 0px;
+            padding: 0px;
+        }
+        body{
+            background-color: rgb(0, 200, 255);
+            text-align: center;
+        }
+        canvas{
+            margin-top: 180px;
+            /* border: 1px solid #000; */
+        }
+        .volume{
+            margin-top: 20px;
+        }
+        .font{
+            font-size: 26px;
+            font-family: fantasy;
+            font-style: normal;
+            font-weight: 600;
+            color: #fff;
+            position: absolute;
+            left: 30%;
+            top: 5%;
+        }
+        .volume{
+            font-size: 18px;
+            font-family: fantasy;
+            font-style: normal;
+            font-weight: 300;
+            color: #fff;
+            position: absolute;
+            left: 40%;
+            top: 70%;
+        }
+        /* media */
+    </style>
+</head>
+<body>
+    <audio src="1.mp3" autoplay id="audio"></audio>
+    <div class="font">拖动地球远近来控制音乐播放的声音大小~</div>    
+    <div class="volume"> 音量 : </div>
+    <canvas width="1360px" height="220px" id="content"></canvas>
+
+
+
+    <script type="text/javascript">
+        var audio = document.getElementById("audio");   
+        audio.volume = 0;
+        var oVolume = document.getElementsByClassName('volume')[0];
+        var myCanvas = document.getElementById('content');
+        var ctx = myCanvas.getContext('2d');
+
+        function createArc(a, b, color, y){  
+            ctx.beginPath();
+            ctx.arc(a, b, 100, 0, Math.PI*2);
+            ctx.fillStyle = color;
+            ctx.shadowColor = "white"
+            ctx.shadowOffectX = 20;
+            ctx.shadowOffectY = 20;    
+            ctx.shadowBlur = y;    
+            ctx.fill();
+        }  
+        createArc(550, 105, "yellow", 25);
+        createArc(790, 105, "red", 0);
+
+        
+        myCanvas.onmousedown = function(e){   
+            var x = e.clientX;  
+            var y = e.clientY;  
+            var before = x - myCanvas.offsetLeft - 550 + 240;            
+            // var before = x - myCanvas.offsetLeft - 380 + 240 - 150;
+            // 0 480
+
+            drag(x, y, before);
+            // console.log(x);
+            // console.log(y);   
+            // console.log(before);  
+            myCanvas.onmouseup = function(){  
+                myCanvas.onmousemove = null;  
+                myCanvas.onmouseup = null;  
+            };  
+        };  
+
+        function drag(x, y, before){  
+            // console.log(ctx.isPointInPath(x, y));
+            if( 0 < before && before < 480){
+                myCanvas.onmousemove = function(e){  
+                    var after = e.clientX - myCanvas.offsetLeft - 550 + 240;              
+                    var ax = e.clientX;   
+                    ctx.clearRect(0, 0, myCanvas.width, myCanvas.height); 
+                    createArc(550, 105, "yellow", 25); 
+                    createArc(ax, 105, "red", 0);  
+
+                    var w = 0, y = 200, z = 255;
+                    if(after < 480 && after > 0){
+                        if (240 <= after && after < 440) {
+
+                            var y = Math.ceil( ((after - 240) / 200 * 200) );
+                            var z = Math.ceil( ((after - 240) / 200 * 255) ); 
+                            console.log(w, y, z);
+                            document.body.style.backgroundColor = 'rgb(' + w +',' + y + ' , ' + z + ')';
+                            console.log('rgb(' + w +',' + y + ',' + z + ')');
+
+                            audio.volume = ((1 - (after - 240) / 200));
+                            console.log((1 - (after - 240) / 200));
+                            var num = ( (1 - (after - 240) / 200)*100 ).toFixed(2);
+                            oVolume.innerHTML= "音量：" + num;
+                            } else if (40 <= after && after < 240) {
+                                audio.volume = ((1 + (after - 240) / 200));
+                                console.log((1 + (after - 240) / 200));
+                                y = Math.ceil( ((240 - after) / 200 * 200) );
+                                z = Math.ceil( ((240 - after) / 200 * 255) ); 
+                                console.log(w, y, z);
+                                document.body.style.backgroundColor = 'rgb(' + w +',' + y + ' , ' + z + ')';
+                                console.log('rgb(' + w +',' + y + ',' + z + ')');
+                                var num = ( (1 + (after - 240) / 200)*100 ).toFixed(2);
+                                oVolume.innerHTML= "音量：" + num;
+                            }else {
+                                audio.volume = 0;
+                                oVolume.innerHTML= "音量：" + 0;
+                            } ;
+                    }else{
+                        if(before < after){
+                            document.body.style.backgroundColor = 'rgb(0, 200, 255)';
+                            ctx.clearRect(0, 0, myCanvas.width, myCanvas.height); 
+                            createArc(550, 105, "yellow", 25); 
+                            createArc(790, 105, "red", 0); 
+                            oVolume.innerHTML= "音量：" + 0;
+                            audio.volume = 0;
+                        }else if(before > after){
+                            document.body.style.backgroundColor = 'rgb(0, 200, 255)';
+                            ctx.clearRect(0, 0, myCanvas.width, myCanvas.height); 
+                            createArc(550, 105, "yellow", 25); 
+                            createArc(310, 105, "red", 0);
+                            oVolume.innerHTML= "音量：" + 0;
+                            audio.volume = 0;
+                        }
+                        myCanvas.onmousemove = null;  
+                        myCanvas.onmouseup = null; 
+                             
+                        };
+                    myCanvas.onmouseup = function(){  
+                        myCanvas.onmousemove = null;  
+                        myCanvas.onmouseup = null;  
+                    }; 
+                };  
+            }else {
+                // if(before > 480){
+                //     document.body.style.backgroundColor = 'rgb(0, 200, 255)';
+                //     ctx.clearRect(0, 0, myCanvas.width, myCanvas.height); 
+                //     createArc(550, 105, "yellow", 25); 
+                //     createArc(790, 105, "red", 0); 
+                //     oVolume.innerHTML= "音量：" + 0;
+                //     audio.volume = 0;
+                // }else if(before < 0){
+                //     document.body.style.backgroundColor = 'rgb(0, 200, 255)';
+                //     ctx.clearRect(0, 0, myCanvas.width, myCanvas.height); 
+                //     createArc(550, 105, "yellow", 25); 
+                //     createArc(310, 105, "red", 0);
+                //     oVolume.innerHTML= "音量：" + 0;
+                //     audio.volume = 0;
+                // }   
+            }                       
+        }
+
+    </script>
+</body>
+</html>
